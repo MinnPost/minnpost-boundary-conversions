@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<head>
+<meta charset="utf-8">
+<style>
+
+
+</style>
+</head>
+<body>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script>
+  var width = 960,
+      height = 500;
+  
+  var quantize = d3.scale.quantize()
+      .domain([0, .15])
+      .range(d3.range(9).map(function(i) { return "q" + i + "-9"; }));
+  
+  var path = d3.geo.path();
+  
+  var svg = d3.select("body").append("svg")
+      .attr("width", width)
+      .attr("height", height);
+  
+  d3.json("mn-county-2010/geojson-dp-60/mn-county-2010.json", function(error, counties) {
+    svg.append("svg")
+      .attr("class", "tracts")
+    .selectAll("path")
+      .data(counties.features)
+    .enter().append("svg:path")
+      .attr("d", path)
+      .attr("fill-opacity", 0.5)
+      .attr("stroke", "#222")
+  });
+</script>
+</body>
+</html>
