@@ -46,15 +46,15 @@
   
     (function(w, $, undefined) {
       var dataSources = {
-        'Counties': 'mn-county-2010/geojson-dp-60/mn-county-2010.json'
+        'Counties': 'mn-county-2010/geojson-dp-60/mn-county-2010.json',
+        'Precincts (60)': 'mn-v-precinct-2012/geojson-dp-60/mn-v-precinct-2012.json',
+        'Precincts (90)': 'mn-v-precinct-2012/geojson-dp-90/mn-v-precinct-2012.json'
       };
       var selectedSource = 'mn-county-2010/geojson-dp-60/mn-county-2010.json';
       var selectedData = null;
       
       // Update data sources
       $(document).ready(function() {
-        $('.loading').html('Loading...');
-        
         // Update select
         for (var d in dataSources) {
           $('#data-input').append('<option value="' + dataSources[d] + '">' + d + '</option>');
@@ -67,6 +67,8 @@
       });
       
       var handleChange = function(e) {
+        $('.loading').html('Loading...');
+        
         var source = $('#data-input').val();
         if (source != selectedSource || selectedData == null) {
           d3.json(source, updateChart);
@@ -78,6 +80,7 @@
       };
       
       var updateChart = function(error, data) {
+        console.log(data);
         // Handle inputs and updates
         var width = parseInt($('#width-input').val());
         var height = parseInt($('#height-input').val());
