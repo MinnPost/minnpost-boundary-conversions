@@ -42,6 +42,7 @@
 
   <script src="http://code.jquery.com/jquery.min.js"></script>
   <script src="http://d3js.org/d3.v3.min.js"></script>
+  <!-- <script src="https://s3.amazonaws.com/data.minnpost/js/r2d3-master-20121114/r2d3.v2.min.js"></script> -->
   <script>
   
     (function(w, $, undefined) {
@@ -135,7 +136,7 @@
           .attr('class', 'tracts')
         .selectAll('path')
           .data(data.features)
-        .enter().append('svg:path')
+        .enter().append('path')
           .attr('d', path)
           .attr('stroke', '#EDEDED')
           .attr('transform', 'translate(' + offsetxd + ', ' + offsetyd + ')');
