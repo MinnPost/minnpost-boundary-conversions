@@ -130,7 +130,19 @@
           .attr('stroke', '#EDEDED')
           .attr('transform', 'translate(' + offsetxd + ', ' + offsetyd + ')')
           .attr('stroke', '#DEDEDE')
-          .attr('fill', '#222222');
+          .attr('fill', '#222222')
+          .on('mouseover', function(d) {
+            this.attr('stroke', 'red')
+              .attr('stroke-width', 3);
+            this.toFront(); // This screws up hover in IE7/8
+          })
+          .on('mouseout', function(d) {
+            this.attr('stroke', '#DEDEDE')
+              .attr('stroke-width', 1);
+          })
+          .on('click', function(d) {
+            this.attr('stroke', '#020202');
+          });
           
         // Remove loading
         $('.loading').html('');
