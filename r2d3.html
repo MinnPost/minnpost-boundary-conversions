@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<head>
+<meta charset="utf-8">
+  <style>
+  .page-container {
+    width: 960px;
+    margin: 0 auto;
+    position: relative;
+  }
+  #chart-container > svg {
+    border: 1px solid #BCBCBC;
+  }
+  </style>
+</head>
+<body>
+  <div class="page-container">
+    <div id="chart-container"></div>
+    <form>
+      <div>
+        <label>Width:</label>
+        <input type="textfield" id="width-input" value="960">
+      </div>
+      <div>
+        <label>Height:</label>
+        <input type="textfield" id="height-input" value="400">
+      </div>
+      <div>
+        <label>Data:</label>
+        <select id="data-input">
+        </select>
+      </div>
+    </form>
+    <div class="loading"></div>
+  </div>
+
+  <script src="http://code.jquery.com/jquery.min.js"></script>
+  <script src="https://s3.amazonaws.com/data.minnpost/js/r2d3-master-20121114/r2d3.v2.min.js"></script>
+  <script>
+  
+    (function(w, $, undefined) {
+      var dataSources = {
+        'Counties': 'mn-county-2010/geojson-dp-60/mn-county-2010.json',
+        'Precincts (60)': 'mn-v-precinct-2012/geojson-dp-60/mn-v-precinct-2012.json',
+        'Precincts (90)': 'mn-v-precinct-2012/geojson-dp-90/mn-v-precinct-2012.json',
+        'US Congress': 'mn-us-congress-2012/geojson-dp-60/mn-us-congress-2012.json'
+      };
+      var selectedSource = 'mn-county-2010/geojson-dp-60/mn-county-2010.json';
+      var selectedData = null;
+      
+      // Update data sources
+      $(document).ready(function() {
+        // Update select
+        for (var d in dataSources) {
+          $('#data-input').append('<option value="' + dataSources[d] + '">' + d + '</option>');
+        };
+        $('#data-input').on('change', handleChange);
+        $('#width-input').on('change', handleChange);
+        $('#height-input').on('change', handleChange);
+        
+        $('#data-input').val(selectedSource).trigger('change');
+      });
+      
+      var handleChange = function(e) {
+        $('.loading').html('Loading...');
+        
+        var source = $('#data-input').val();
+        if (source != selectedSource || selectedData == null) {
+          d3.json(source, updateChart);
+        }
+        else {
+          updateChart(selectedData);
+        }
+        selectedSource = source;
+      };
+      
+      var updateChart = function(data) {
+        // Handle inputs and updates
+        var width = parseInt($('#width-input').val());
+        var height = parseInt($('#height-input').val());
+        selectedData = data;
+        $('#chart-container *').remove();
+      
+        // Bounding code borrowed from: http://www.larsko.org/v/igdp/
+        var margin = width * 0.02;
+        var proj = d3.geo.mercator().scale(1).translate([0,0]);
+        var bounds0 = d3.geo.bounds(data);
+        var bounds = bounds0.map(proj);
+        var xscale = (width - 2 * margin) / Math.abs(bounds[1][0] - bounds[0][0]);
+        var yscale = (height - 2 * margin) / Math.abs(bounds[1][1] - bounds[0][1]);
+        var pscale = Math.min(xscale, yscale);
+        
+        // Create svg canvas
+        var svg = d3.select('#chart-container').append('svg')
+          .attr('width', width)
+          .attr('height', height);
+        
+        // Handle projection
+        var wscale = pscale;
+        proj.scale(pscale);
+        proj.translate(proj([-bounds0[0][0], -bounds0[1][1]]));
+        var path = d3.geo.path().projection(proj);
+        
+        // Handle svg canvas, dpeneding on orientation
+        if (xscale > yscale) {
+          var d = xscale * Math.abs(bounds[1][0] - bounds[0][0]) - yscale * Math.abs(bounds[1][0] - bounds[0][0]);
+          svg.attr('transform', 'translate(' + d / 2 + ', 0)');
+        }
+        else {
+          var d = yscale * Math.abs(bounds[1][1] - bounds[0][1]) - xscale * Math.abs(bounds[1][1] - bounds[0][1]);
+          svg.attr('transform', 'translate(0, ' + d / 5 + ')');
+        }
+        
+        // Handle offset, dpeneding on orientation
+        var widthd = proj(bounds0[0])[1];
+        var heightd = proj(bounds0[1])[0];
+        if (xscale > yscale) {
+          var offsetxd = (width / 2 - widthd / 2);
+          var offsetyd = margin;
+        }
+        else {
+          var offsetxd = margin;
+          var offsetyd = (height / 2 - heightd / 2);
+        }
+      
+        // Render paths
+        svg.selectAll('path')
+          .data(data.features)
+        .enter().append('path')
+          .attr('d', path)
+          .attr('stroke', '#EDEDED')
+          .attr('transform', 'translate(' + offsetxd + ', ' + offsetyd + ')')
+          .attr('stroke', '#DEDEDE')
+          .attr('fill', '#222222');
+          
+        // Remove loading
+        $('.loading').html('');
+      };
+      
+    })(window, jQuery);
+  </script>
+</body>
+</html>
